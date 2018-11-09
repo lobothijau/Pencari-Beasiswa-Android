@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_beasiswa"
+        android:title="Beasiswa"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_school_black_24dp"
+        />
+
+    <item
+        android:id="@+id/menu_artikel"
+        android:title="Artikel"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_subject_black_24dp"
+        />
+    <!--<item-->
+        <!--android:id="@+id/menu_favorit"-->
+        <!--android:title="Beasiswa"-->
+        <!--app:showAsAction="ifRoom"-->
+        <!---->
+        <!--/>-->
+</menu>

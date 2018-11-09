@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "218437571997",
+    "firebase_url": "https://pencari-beasiswa.firebaseio.com",
+    "project_id": "pencari-beasiswa",
+    "storage_bucket": "pencari-beasiswa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:218437571997:android:7c9f84c9433d6b68",
+        "android_client_info": {
+          "package_name": "id.droidindonesia.pencaribeasiswa"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "218437571997-dlqcnamhm29tc9hu0murq82ge8hko142.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "id.droidindonesia.pencaribeasiswa",
+            "certificate_hash": "079f2958e4fc64bcdc41662a9cf01520ee9c9721"
+          }
+        },
+        {
+          "client_id": "218437571997-1rcjc6774ao6sd0fgatddv5ml4ieqqhu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEe4c1uJBDPgWDZWLxshcZvKrx9sV3iDA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "218437571997-1rcjc6774ao6sd0fgatddv5ml4ieqqhu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
