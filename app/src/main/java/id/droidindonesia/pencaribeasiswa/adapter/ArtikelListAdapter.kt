@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import id.droidindonesia.pencaribeasiswa.R
 import id.droidindonesia.pencaribeasiswa.model.Artikel
 import id.droidindonesia.pencaribeasiswa.service.ListBeasiswaResponse
@@ -69,6 +70,7 @@ class ArtikelListAdapter(private var listArtikel: List<Any>?,
     myholder.tanggalTV.text = "$day $monthString $yearString";
     Glide.with(parentActivity)
         .load(searchView.gambar)
+        .apply(RequestOptions().placeholder(R.drawable.isola))
         .into(holder.gambarIV)
   }
 

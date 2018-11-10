@@ -40,6 +40,7 @@ import android.text.method.LinkMovementMethod
 import android.view.*
 import android.widget.Toast
 import com.bumptech.glide.Glide
+import com.google.android.gms.ads.AdRequest
 import id.droidindonesia.pencaribeasiswa.R
 import id.droidindonesia.pencaribeasiswa.service.ListBeasiswaResponse
 import id.droidindonesia.pencaribeasiswa.viewmodel.BeasiswaViewModel
@@ -47,6 +48,9 @@ import id.droidindonesia.pencaribeasiswa.util.HtmlUtils
 import id.droidindonesia.pencaribeasiswa.util.DateUtils
 import kotlinx.android.synthetic.main.fragment_podcast_details.*
 import java.text.SimpleDateFormat
+import io.fabric.sdk.android.services.settings.IconRequest.build
+import kotlinx.android.synthetic.main.fragment_artikel_details.*
+
 
 class BeasiswaDetailsFragment : Fragment() {
 
@@ -64,7 +68,7 @@ class BeasiswaDetailsFragment : Fragment() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setHasOptionsMenu(true)
+//    setHasOptionsMenu(true)
     setupViewModel()
   }
 
@@ -82,6 +86,9 @@ class BeasiswaDetailsFragment : Fragment() {
     activity?.let { Glide.with(it).load(beasiswa.gambar).into(gambarBeasiswa) }
 
     getDetailBeasiswa(beasiswa.id)
+
+    val adRequest = AdRequest.Builder().build()
+    adView.loadAd(adRequest)
   }
 
   private fun getDetailBeasiswa(id: Int) {
@@ -104,10 +111,10 @@ class BeasiswaDetailsFragment : Fragment() {
     }
   }
 
-  override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-    super.onCreateOptionsMenu(menu, inflater)
-    inflater?.inflate(R.menu.menu_details, menu)
-  }
+//  override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+//    super.onCreateOptionsMenu(menu, inflater)
+//    inflater?.inflate(R.menu.menu_details, menu)
+//  }
 
   private fun setupViewModel() {
     beasiswaViewModel = activity?.let { ViewModelProviders.of(it).get(BeasiswaViewModel::class.java) }!!

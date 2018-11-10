@@ -47,6 +47,7 @@ import java.text.SimpleDateFormat
 import com.google.android.gms.ads.formats.MediaView
 import com.google.android.gms.ads.formats.UnifiedNativeAd
 import android.widget.RatingBar
+import com.bumptech.glide.request.RequestOptions
 import com.google.android.gms.ads.formats.NativeAd
 
 
@@ -162,6 +163,7 @@ class BeasiswaListAdapter(private var listBeasiswa: List<Any>?,
     holder.bulanDeadlineTextView.text = "$day $monthString $yearString";
     Glide.with(parentActivity)
         .load(searchView.gambar)
+        .apply(RequestOptions().placeholder(R.drawable.isola))
         .into(holder.gambarBeasiswaImageView)
   }
 

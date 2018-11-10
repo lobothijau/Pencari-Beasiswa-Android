@@ -139,12 +139,14 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
     if (searchViewModel.listArtikel.isNotEmpty()) {
       artikelAdapter.setData(searchViewModel.listArtikel)
     } else {
+      progressBar.visibility = View.VISIBLE
       searchViewModel.searchArtikel {
         if (it == null) {
           showError("Data tidak tersedia.")
         } else {
           artikelAdapter.setData(it)
         }
+        progressBar.visibility = View.INVISIBLE
       }
     }
     podcastRecyclerView.adapter = artikelAdapter

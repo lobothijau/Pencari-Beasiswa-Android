@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment
 import android.text.format.DateFormat
 import android.view.*
 import com.bumptech.glide.Glide
+import com.google.android.gms.ads.AdRequest
 import kotlinx.android.synthetic.main.fragment_podcast_details.*
 import id.droidindonesia.pencaribeasiswa.R
 import id.droidindonesia.pencaribeasiswa.model.Artikel
@@ -49,6 +50,8 @@ class ArtikelDetailsFragment : Fragment() {
 
     activity?.let { Glide.with(it).load(artikel.gambar).into(gambarArtikel) }
 
+    val adRequest = AdRequest.Builder().build()
+    artikel_details_adView.loadAd(adRequest)
   }
 
 }
