@@ -41,7 +41,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
 
   var beasiswaRepo: BeasiswaRepository? = null
 
-  lateinit var listBeasiswa: List<ListBeasiswaResponse.Beasiswa>
+  var listBeasiswa: List<ListBeasiswaResponse.Beasiswa> = emptyList()
   var listArtikel: List<Artikel> = emptyList()
 
   fun searchPodcasts(q: String, callback: (List<ListBeasiswaResponse.Beasiswa>?) -> Unit) {
