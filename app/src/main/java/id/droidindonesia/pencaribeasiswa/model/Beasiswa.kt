@@ -1,5 +1,19 @@
 package id.droidindonesia.pencaribeasiswa.model
 
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+
+@Parcelize
+data class BeasiswaList(
+    val id: Int,
+    val negara: List<Int>,
+    val jenis: List<Int>,
+    val nama: String,
+    val gambar: String,
+    val start: String,
+    val deadline: String
+) : Parcelable
+
 data class Beasiswa(
     val id: Int,
     val negara: List<String>,

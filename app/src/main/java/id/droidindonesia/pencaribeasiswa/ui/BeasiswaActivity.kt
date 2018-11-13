@@ -31,15 +31,14 @@
 package id.droidindonesia.pencaribeasiswa.ui
 
 import android.app.SearchManager
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.BottomNavigationView
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.SearchView
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -47,42 +46,60 @@ import android.view.View
 import android.widget.Toast
 import id.droidindonesia.pencaribeasiswa.R
 import id.droidindonesia.pencaribeasiswa.adapter.BeasiswaListAdapter
-import id.droidindonesia.pencaribeasiswa.repository.BeasiswaRepository
+import id.droidindonesia.pencaribeasiswa.repository.MainRepository
 import id.droidindonesia.pencaribeasiswa.service.BeasiswaService
-import id.droidindonesia.pencaribeasiswa.service.ListBeasiswaResponse
 import id.droidindonesia.pencaribeasiswa.viewmodel.BeasiswaViewModel
-import id.droidindonesia.pencaribeasiswa.viewmodel.SearchViewModel
+import id.droidindonesia.pencaribeasiswa.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.activity_beasiswa.*
 import com.google.android.gms.ads.AdLoader
-import com.google.android.gms.ads.formats.UnifiedNativeAd
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdRequest
 import id.droidindonesia.pencaribeasiswa.adapter.ArtikelListAdapter
+import id.droidindonesia.pencaribeasiswa.adapter.LombaListAdapter
 import id.droidindonesia.pencaribeasiswa.model.Artikel
+import id.droidindonesia.pencaribeasiswa.model.BeasiswaList
+import id.droidindonesia.pencaribeasiswa.model.Lomba
+import android.content.DialogInterface
+import androidx.core.view.MenuItemCompat
+import java.io.File.separator
+import kotlin.text.StringBuilder
 
 
-class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAdapterListener, ArtikelListAdapter.ArtikelListAdapterListener {
+class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAdapterListener, ArtikelListAdapter.ArtikelListAdapterListener, LombaListAdapter.LombaAdapterListener {
+  override fun onShowLomba(lomba: Lomba?) {
+    val lombaDetailsFragment = LombaDetailsFragment.newInstance(lomba)
+    supportFragmentManager.beginTransaction().add(R.id.podcastDetailsContainer,
+        lombaDetailsFragment, TAG_LOMBA_FRAGMENT).addToBackStack(TAG_LOMBA_FRAGMENT).commit()
+    hideListAndBottomNavigation()
+  }
+
+  fun hideListAndBottomNavigation() {
+    swipe.visibility = View.GONE
+    podcastRecyclerView.visibility = View.GONE
+    bottomNavigation.visibility = View.INVISIBLE
+    searchMenuItem.isVisible = false
+    fab.visibility = View.GONE
+  }
 
   override fun onDetailArtikel(artikel: Artikel?) {
     val artikelDetailsFragment = ArtikelDetailsFragment.newInstance(artikel)
     supportFragmentManager.beginTransaction().add(R.id.podcastDetailsContainer,
         artikelDetailsFragment, TAG_ARTIKEL_FRAGMENT).addToBackStack("ArtikelDetailsFragment").commit()
-    podcastRecyclerView.visibility = View.INVISIBLE
-    bottomNavigation.visibility = View.INVISIBLE
-    searchMenuItem.isVisible = false
+    hideListAndBottomNavigation()
   }
 
-  private lateinit var searchViewModel: SearchViewModel
+  private lateinit var mainViewModel: MainViewModel
   private lateinit var beasiswaViewModel: BeasiswaViewModel
   private lateinit var beasiswaListAdapter: BeasiswaListAdapter
   private lateinit var searchMenuItem: MenuItem
-  private lateinit var beasiswaList: MutableList<Any>
 
   private lateinit var adLoader: AdLoader
-  private lateinit var nativeAds: MutableList<UnifiedNativeAd>
 
   private lateinit var artikelAdapter: ArtikelListAdapter
+  private lateinit var lombaListAdapter: LombaListAdapter
 
+  private var nama = ""
+  private lateinit var searchView: SearchView
+
+//  private var selectedMenu : Int = -1
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -97,12 +114,57 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
     addBackStackListener()
 
     artikelAdapter = ArtikelListAdapter(emptyList(), this, this)
-
-    beasiswaList = mutableListOf()
-    nativeAds = mutableListOf()
+    lombaListAdapter = LombaListAdapter(emptyList(), this, this)
 
     // Initial search
     performSearch("")
+
+    swipe.setOnRefreshListener {
+      val selectedMenu = bottomNavigation.selectedItemId
+
+      if (selectedMenu == R.id.menu_beasiswa) {
+        mainViewModel.listBeasiswa = emptyList()
+        performSearch("")
+      } else if (selectedMenu == R.id.menu_lomba) {
+        mainViewModel.listLomba = emptyList()
+        loadLombaRecyclerView("")
+      } else if (selectedMenu == R.id.menu_artikel) {
+        mainViewModel.listArtikel = emptyList()
+        loadArtikelRecyclerView("")
+      }
+    }
+
+    fab.setOnClickListener {
+      val builder = AlertDialog.Builder(this@BeasiswaActivity)
+
+      val entries = arrayOf("Luar Negeri", "S1", "S2", "S3", "Dalam Negeri")
+      val entryValues = emptyArray<Int>()
+
+      val checkBoolean = booleanArrayOf(false, // Red
+          false, // Green
+          false, // Blue
+          false, // Purple
+          false // Olive
+      )
+      builder.setTitle("Filter berdasarkan: ")
+          // Specify the list array, the items to be selected by default (null for none),
+          // and the listener through which to receive callbacks when items are selected
+          .setMultiChoiceItems(entries, checkBoolean) { dialog, which, isChecked ->
+            checkBoolean[which] = isChecked
+          }
+          // Set the action buttons
+          .setPositiveButton("OK") { dialog, id ->
+            // User clicked OK, so save the checkedItems results somewhere
+            // or return them to the component that opened the dialog
+            //...
+            searchBeasiswaWithFilter(checkBoolean)
+          }
+          .setNegativeButton("BATAL", DialogInterface.OnClickListener { dialog, id ->
+            //...
+          })
+          .create()
+          .show()
+    }
   }
 
   private fun setupBottomNavigation() {
@@ -113,36 +175,45 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
     when (item.itemId) {
       R.id.menu_beasiswa -> {
         loadBeasiswaRecyclerView()
+//        selectedMenu = R.id.menu_beasiswa
+        fab.visibility = View.VISIBLE
+        searchMenuItem.isVisible = true
         return@OnNavigationItemSelectedListener true
       }
       R.id.menu_artikel -> {
-        loadArtikelRecyclerView()
+        loadArtikelRecyclerView("")
+//        selectedMenu = R.id.menu_artikel
+        fab.visibility = View.GONE
+        searchMenuItem.isVisible = false
         return@OnNavigationItemSelectedListener true
       }
-//      R.id.menu_favorit -> {
-//        loadFavoritRecyclerView()
-//        return@OnNavigationItemSelectedListener true
-//      }
+      R.id.menu_lomba -> {
+        loadLombaRecyclerView("")
+//        selectedMenu = R.id.menu_lomba
+        fab.visibility = View.GONE
+        searchMenuItem.isVisible = false
+        return@OnNavigationItemSelectedListener true
+      }
     }
     false
   }
 
 
   private fun loadBeasiswaRecyclerView() {
-    if (searchViewModel.listBeasiswa.isNotEmpty()) {
-      beasiswaListAdapter.setSearchData(searchViewModel.listBeasiswa)
+    if (mainViewModel.listBeasiswa.isNotEmpty()) {
+      beasiswaListAdapter.setSearchData(mainViewModel.listBeasiswa)
       podcastRecyclerView.adapter = beasiswaListAdapter
     }
   }
 
-  private fun loadArtikelRecyclerView() {
-    if (searchViewModel.listArtikel.isNotEmpty()) {
-      artikelAdapter.setData(searchViewModel.listArtikel)
+  private fun loadArtikelRecyclerView(query: String) {
+    if (mainViewModel.listArtikel.isNotEmpty()) {
+      artikelAdapter.setData(mainViewModel.listArtikel)
     } else {
       progressBar.visibility = View.VISIBLE
-      searchViewModel.searchArtikel {
+      mainViewModel.searchArtikel {
         if (it == null) {
-          showError("Data tidak tersedia.")
+          showError("Data tidak tersedia. Pastikan memiliki koneksi Internet yang baik.")
         } else {
           artikelAdapter.setData(it)
         }
@@ -150,12 +221,25 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
       }
     }
     podcastRecyclerView.adapter = artikelAdapter
+    swipe.isRefreshing = false;
   }
 
-  private fun loadFavoritRecyclerView() {
-    beasiswaViewModel.loadFavBeasiswa {
-      beasiswaListAdapter.setSearchData(it!!)
+  private fun loadLombaRecyclerView(query: String) {
+    if (mainViewModel.listLomba.isNotEmpty()) {
+      lombaListAdapter.setData(mainViewModel.listLomba)
+    } else {
+      progressBar.visibility = View.VISIBLE
+      mainViewModel.searchLomba(query) {
+        if (it == null) {
+          showError("Data tidak tersedia. Pastikan memiliki koneksi Internet yang baik.")
+        } else {
+          lombaListAdapter.setData(it)
+        }
+        progressBar.visibility = View.INVISIBLE
+      }
     }
+    podcastRecyclerView.adapter = lombaListAdapter
+    swipe.isRefreshing = false;
   }
 
   override fun onOptionsItemSelected(item: MenuItem?): Boolean {
@@ -179,18 +263,17 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
     inflater.inflate(R.menu.menu_search, menu)
 
     searchMenuItem = menu.findItem(R.id.search_item)
-    val searchView = searchMenuItem.actionView as SearchView
+    searchView = searchMenuItem.actionView as SearchView
 
     val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
     searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
 
     if (supportFragmentManager.backStackEntryCount > 0) {
+      swipe.visibility = View.GONE
       podcastRecyclerView.visibility = View.INVISIBLE
     }
 
-    if (podcastRecyclerView.visibility == View.INVISIBLE) {
-      searchMenuItem.isVisible = false
-    }
+    searchMenuItem.isVisible = podcastRecyclerView.visibility != View.INVISIBLE
 
     return true
   }
@@ -201,74 +284,79 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
     handleIntent(intent)
   }
 
-  override fun onShowDetails(beasiswa: ListBeasiswaResponse.Beasiswa?) {
+  override fun onShowDetails(beasiswa: BeasiswaList?) {
     if (beasiswa != null) {
       showDetailsFragment(beasiswa)
     }
   }
 
-  private fun insertAdsInMenuItems() {
-    Log.d("BeasiswaActivity", "Jumlah naive ads: $nativeAds")
-    if (nativeAds.isEmpty()) {
-      return
-    }
+  private fun searchBeasiswaWithFilter(checkBoolean: BooleanArray) {
+    var stringBuilder = ArrayList<String>()
+    if (checkBoolean[0])
+      stringBuilder.add("1")
+    if (checkBoolean[1])
+      stringBuilder.add("2")
+    if (checkBoolean[2])
+      stringBuilder.add("3")
+    if (checkBoolean[3])
+      stringBuilder.add("4")
+    if (checkBoolean[4])
+      stringBuilder.add("5")
 
-    val offset = beasiswaList.size / nativeAds.size + 1
-    var index = 0
-    for (ad in nativeAds) {
-      beasiswaList.add(index, ad)
-      index += offset
-    }
-  }
+    Log.d("BeasiswaActivity", "Hasil" + stringBuilder.joinToString(separator = ","))
 
-  private fun loadNativeAds(count: Int) {
+    mainViewModel.searchPodcastsByJenis(nama, stringBuilder.joinToString(separator = ",")) { beasiswaResponse ->
 
-    val builder = AdLoader.Builder(this, getString(R.string.ad_unit_id))
-    adLoader = builder.forUnifiedNativeAd { unifiedNativeAd ->
-      // A native ad loaded successfully, check if the ad loader has finished loading
-      // and if so, insert the ads into the list.
-      nativeAds.add(unifiedNativeAd)
-      if (!adLoader.isLoading) {
-        insertAdsInMenuItems()
+      // tutup search view
+      if (!searchView.isIconified) {
+        MenuItemCompat.collapseActionView(searchMenuItem);
       }
-    }.withAdListener(
-        object : AdListener() {
-          override fun onAdFailedToLoad(errorCode: Int) {
-            // A native ad failed to load, check if the ad loader has finished loading
-            // and if so, insert the ads into the list.
-            Log.e("BeasiswaActivity", ("The previous native ad failed to load. Attempting to" + " load another."))
-            if (!adLoader.isLoading) {
-              insertAdsInMenuItems()
-            }
-          }
-        }).build()
+      // reset search
+      nama = ""
 
-    // Load the Native Express ad. Load per 8 items.
-    adLoader.loadAds(AdRequest.Builder().build(), count / 8)
+      hideProgressBar()
+      // Ganti title hanya jika user memang melakukan pencarian
+      Log.d("BeasiswaActivity", "Beasiswa Response: $beasiswaResponse")
+      if (beasiswaResponse != null) {
+        beasiswaListAdapter.clear()
+        beasiswaListAdapter.setSearchData(mainViewModel.listBeasiswa)
+      }
+      swipe.isRefreshing = false;
+
+    }
   }
 
   private fun performSearch(q: String) {
     showProgressBar()
-    searchViewModel.searchPodcasts(q) { beasiswaResponse ->
+    mainViewModel.searchPodcasts(q) { beasiswaResponse ->
       hideProgressBar()
       // Ganti title hanya jika user memang melakukan pencarian
       if (!q.isEmpty()) {
         toolbar.title = getString(R.string.search_results)
       }
+      // nama supaya  bisa di filter
+      nama = q
       Log.d("BeasiswaActivity", "Beasiswa Response: $beasiswaResponse")
       if (beasiswaResponse != null) {
-        beasiswaList.addAll(beasiswaResponse)
-        Log.d("BeasiswaActivity", "Jumlah beasiswa: $beasiswaList")
-        loadNativeAds(beasiswaList.size)
+        beasiswaListAdapter.clear()
+        beasiswaListAdapter.setSearchData(mainViewModel.listBeasiswa)
       }
-      beasiswaListAdapter.setSearchData(beasiswaList)
+      swipe.isRefreshing = false;
     }
   }
 
   private fun handleIntent(intent: Intent) {
     if (Intent.ACTION_SEARCH == intent.action) {
       val query = intent.getStringExtra(SearchManager.QUERY)
-      performSearch(query)
+
+      val idBottomNav = bottomNavigation.selectedItemId
+      if (idBottomNav == R.id.menu_beasiswa) {
+        performSearch(query)
+      } else if (idBottomNav == R.id.menu_artikel) {
+        loadArtikelRecyclerView(query)
+      } else if (idBottomNav == R.id.menu_lomba) {
+        loadLombaRecyclerView(query)
+      }
     }
   }
 
@@ -279,18 +367,20 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
 
   private fun setupViewModels() {
     val service = BeasiswaService.instance
-    val repo = BeasiswaRepository(service)
-    searchViewModel = ViewModelProviders.of(this).get(SearchViewModel::class.java)
-    searchViewModel.beasiswaRepo = repo
+    val repo = MainRepository(service)
+    mainViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+    mainViewModel.mainRepo = repo
     beasiswaViewModel = ViewModelProviders.of(this).get(BeasiswaViewModel::class.java)
-    beasiswaViewModel.beasiswaRepo = repo
+    beasiswaViewModel.mainRepo = repo
   }
 
   private fun addBackStackListener() {
     supportFragmentManager.addOnBackStackChangedListener {
       if (supportFragmentManager.backStackEntryCount == 0) {
+        swipe.visibility = View.VISIBLE
         podcastRecyclerView.visibility = View.VISIBLE
         bottomNavigation.visibility = View.VISIBLE
+        searchMenuItem.isVisible = true
         toolbar.title = getString(R.string.app_name)
 
       }
@@ -316,10 +406,10 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
   private fun updateControls() {
     podcastRecyclerView.setHasFixedSize(true)
 
-    val layoutManager = LinearLayoutManager(this)
+    val layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
     podcastRecyclerView.layoutManager = layoutManager
 
-    val dividerItemDecoration = android.support.v7.widget.DividerItemDecoration(
+    val dividerItemDecoration = androidx.recyclerview.widget.DividerItemDecoration(
         podcastRecyclerView.context, layoutManager.orientation)
     podcastRecyclerView.addItemDecoration(dividerItemDecoration)
 
@@ -328,18 +418,15 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
   }
 
 
-  private fun showDetailsFragment(beasiswa: ListBeasiswaResponse.Beasiswa) {
+  private fun showDetailsFragment(beasiswa: BeasiswaList) {
     val beasiswaDetailsFragment = createBeasiswaDetailFragment(beasiswa)
 
     supportFragmentManager.beginTransaction().add(R.id.podcastDetailsContainer,
         beasiswaDetailsFragment, TAG_DETAILS_FRAGMENT).addToBackStack("DetailsFragment").commit()
-    podcastRecyclerView.visibility = View.INVISIBLE
-    bottomNavigation.visibility = View.INVISIBLE
-    searchMenuItem.isVisible = false
-
+    hideListAndBottomNavigation()
   }
 
-  private fun createBeasiswaDetailFragment(beasiswa: ListBeasiswaResponse.Beasiswa): BeasiswaDetailsFragment {
+  private fun createBeasiswaDetailFragment(beasiswa: BeasiswaList): BeasiswaDetailsFragment {
     var beasiswaDetailsFragment = supportFragmentManager.findFragmentByTag(TAG_DETAILS_FRAGMENT) as
         BeasiswaDetailsFragment?
 
@@ -369,5 +456,6 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
   companion object {
     private val TAG_DETAILS_FRAGMENT = "DetailsFragment"
     private val TAG_ARTIKEL_FRAGMENT = "ArtikelDetailsFragment"
+    private val TAG_LOMBA_FRAGMENT = "LombaDetailsFragment"
   }
 }

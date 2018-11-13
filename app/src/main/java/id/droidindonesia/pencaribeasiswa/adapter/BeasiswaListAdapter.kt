@@ -31,7 +31,6 @@
 package id.droidindonesia.pencaribeasiswa.adapter
 
 import android.app.Activity
-import android.support.v7.widget.RecyclerView
 import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
@@ -48,13 +47,13 @@ import com.google.android.gms.ads.formats.MediaView
 import com.google.android.gms.ads.formats.UnifiedNativeAd
 import android.widget.RatingBar
 import com.bumptech.glide.request.RequestOptions
-import com.google.android.gms.ads.formats.NativeAd
+import id.droidindonesia.pencaribeasiswa.model.BeasiswaList
 
 
-class BeasiswaListAdapter(private var listBeasiswa: List<Any>?,
+class BeasiswaListAdapter(private var items: List<Any>?,
                           private val podcastListAdapterListener: PodcastListAdapterListener,
                           private val parentActivity: Activity) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    androidx.recyclerview.widget.RecyclerView.Adapter<BeasiswaListAdapter.ViewHolder>() {
 
   // A beasiswa item view type.
   private val BEASISWA_ITEM_VIEW_TYPE = 0
@@ -63,33 +62,33 @@ class BeasiswaListAdapter(private var listBeasiswa: List<Any>?,
   private val UNIFIED_NATIVE_AD_VIEW_TYPE = 1
 
   interface PodcastListAdapterListener {
-    fun onShowDetails(beasiswa: ListBeasiswaResponse.Beasiswa?)
+    fun onShowDetails(beasiswa: BeasiswaList?)
   }
 
   override fun getItemViewType(position: Int): Int {
-    val rvItem = listBeasiswa?.get(position)
+    val rvItem = items?.get(position)
     if (rvItem is UnifiedNativeAd) {
       return UNIFIED_NATIVE_AD_VIEW_TYPE
     }
     return BEASISWA_ITEM_VIEW_TYPE
   }
 
-  inner class ViewHolder(v: View, private val podcastListAdapterListener: PodcastListAdapterListener) : RecyclerView.ViewHolder(v) {
+  inner class ViewHolder(v: View, private val podcastListAdapterListener: PodcastListAdapterListener) : androidx.recyclerview.widget.RecyclerView.ViewHolder(v) {
 
     val namaBeasiswaTextView: TextView = v.findViewById(R.id.namaBeasiswa)
-    val negaraBeasiswaTextView: TextView = v.findViewById(R.id.negaraTextView)
+    //    val negaraBeasiswaTextView: TextView = v.findViewById(R.id.negaraTextView)
     val gambarBeasiswaImageView: ImageView = v.findViewById(R.id.gambarBeasiswa)
     val tanggalDeadlineTextView: TextView = v.findViewById(R.id.tanggalDeadline)
     val bulanDeadlineTextView: TextView = v.findViewById(R.id.bulanDeadline)
 
     init {
       v.setOnClickListener {
-        podcastListAdapterListener.onShowDetails(listBeasiswa!![adapterPosition] as ListBeasiswaResponse.Beasiswa)
+        podcastListAdapterListener.onShowDetails(items!![adapterPosition] as BeasiswaList)
       }
     }
   }
 
-  inner class UnifiedNativeAdViewHolder internal constructor(view: View) : RecyclerView.ViewHolder(view) {
+  inner class UnifiedNativeAdViewHolder internal constructor(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
 
     val adView: UnifiedNativeAdView
 
@@ -113,43 +112,31 @@ class BeasiswaListAdapter(private var listBeasiswa: List<Any>?,
   }
 
   fun setSearchData(listBeasiswaFromServer: List<Any>) {
-    this.listBeasiswa = listBeasiswaFromServer
+    this.items = listBeasiswaFromServer
     this.notifyDataSetChanged()
   }
 
   override fun onCreateViewHolder(parent: ViewGroup,
-                                  viewType: Int): RecyclerView.ViewHolder {
+                                  viewType: Int): BeasiswaListAdapter.ViewHolder {
 
-    when (viewType) {
-      UNIFIED_NATIVE_AD_VIEW_TYPE -> {
-        val unifiedNativeLayoutView = LayoutInflater.from(
-            parent.getContext()).inflate(R.layout.ad_unified,
-            parent, false)
-        return UnifiedNativeAdViewHolder(unifiedNativeLayoutView)
-      }
-      BEASISWA_ITEM_VIEW_TYPE -> {
-        val menuItemLayoutView = LayoutInflater.from(parent.getContext())
-            .inflate(R.layout.search_item, parent, false)
-        return ViewHolder(menuItemLayoutView, podcastListAdapterListener)
-      }
-      // Fall through.
-      else -> {
-        val menuItemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.search_item, parent, false)
-        return ViewHolder(menuItemLayoutView, podcastListAdapterListener)
-      }
-    }
+
+    val menuItemLayoutView = LayoutInflater.from(parent.getContext())
+        .inflate(R.layout.search_item, parent, false)
+    return ViewHolder(menuItemLayoutView, podcastListAdapterListener)
+
+
   }
 
-  override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+  override fun onBindViewHolder(holder: BeasiswaListAdapter.ViewHolder, position: Int) {
     val viewType = getItemViewType(position)
 
     if (viewType == UNIFIED_NATIVE_AD_VIEW_TYPE) {
-      val nativeAd = listBeasiswa?.get(position) as UnifiedNativeAd
+      val nativeAd = items?.get(position) as UnifiedNativeAd
       populateNativeAdView(nativeAd, (holder as UnifiedNativeAdViewHolder).adView)
       return
     }
 
-    val searchView = listBeasiswa?.get(position) as ListBeasiswaResponse.Beasiswa
+    val searchView = items?.get(position) as BeasiswaList
 
     val format = SimpleDateFormat("yyyy-MM-dd")
     val date = format.parse(searchView.deadline)
@@ -157,9 +144,8 @@ class BeasiswaListAdapter(private var listBeasiswa: List<Any>?,
     val monthString = DateFormat.format("MMM", date) as String // Jun
     val yearString = DateFormat.format("yy", date) as String // 19
 
-    val vh = holder as ViewHolder
     holder.namaBeasiswaTextView.text = searchView.nama
-    holder.negaraBeasiswaTextView.text = searchView.negara.get(0) ?: "-"
+//    holder.negaraBeasiswaTextView.text = searchView.negara.get(0) ?: "-"
     holder.bulanDeadlineTextView.text = "$day $monthString $yearString";
     Glide.with(parentActivity)
         .load(searchView.gambar)
@@ -168,7 +154,7 @@ class BeasiswaListAdapter(private var listBeasiswa: List<Any>?,
   }
 
   override fun getItemCount(): Int {
-    return listBeasiswa?.size ?: 0
+    return items?.size ?: 0
   }
 
   private fun populateNativeAdView(nativeAd: UnifiedNativeAd,
@@ -219,5 +205,10 @@ class BeasiswaListAdapter(private var listBeasiswa: List<Any>?,
 
     // Assign native ad object to the native view.
     adView.setNativeAd(nativeAd)
+  }
+
+  fun clear() {
+    items = emptyList()
+    notifyDataSetChanged()
   }
 }

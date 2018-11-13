@@ -1,20 +1,20 @@
 package id.droidindonesia.pencaribeasiswa.viewmodel
 
 import android.app.Application
-import android.arch.lifecycle.AndroidViewModel
+import androidx.lifecycle.AndroidViewModel
 import android.util.Log
 import id.droidindonesia.pencaribeasiswa.model.Beasiswa
-import id.droidindonesia.pencaribeasiswa.repository.BeasiswaRepository
+import id.droidindonesia.pencaribeasiswa.repository.MainRepository
 
 class BeasiswaViewModel(application: Application) : AndroidViewModel(application) {
 
-  var beasiswaRepo: BeasiswaRepository? = null
+  var mainRepo: MainRepository? = null
 
   private lateinit var beasiswa: Beasiswa
 
 
   fun getBeasiswa(id: Int, callback: (Beasiswa?) -> Unit) {
-    beasiswaRepo?.getBeasiswa(id) { beasiswa ->
+    mainRepo?.getBeasiswa(id) { beasiswa ->
       if (beasiswa == null) {
         callback(null)
       } else {

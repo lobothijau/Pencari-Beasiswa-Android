@@ -30,18 +30,24 @@
 
 package id.droidindonesia.pencaribeasiswa.ui
 
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import android.text.Html
 import android.text.Spanned
 import android.text.format.DateFormat
 import android.text.method.LinkMovementMethod
 import android.view.*
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
 import id.droidindonesia.pencaribeasiswa.R
+import id.droidindonesia.pencaribeasiswa.R.id.*
+import id.droidindonesia.pencaribeasiswa.model.BeasiswaList
 import id.droidindonesia.pencaribeasiswa.service.ListBeasiswaResponse
 import id.droidindonesia.pencaribeasiswa.viewmodel.BeasiswaViewModel
 import id.droidindonesia.pencaribeasiswa.util.HtmlUtils
@@ -57,7 +63,7 @@ class BeasiswaDetailsFragment : Fragment() {
   private lateinit var beasiswaViewModel : BeasiswaViewModel
 
   companion object {
-    fun newInstance(beasiswa: ListBeasiswaResponse.Beasiswa): BeasiswaDetailsFragment {
+    fun newInstance(beasiswa: BeasiswaList): BeasiswaDetailsFragment {
       val beasiwaDetailsFragment = BeasiswaDetailsFragment()
       val args = Bundle()
       args.putParcelable("beasiswa", beasiswa)
@@ -79,9 +85,24 @@ class BeasiswaDetailsFragment : Fragment() {
     return inflater!!.inflate(R.layout.fragment_podcast_details, container, false)
   }
 
+  lateinit var namaBeasiswa: TextView
+  lateinit var adView: AdView
+  lateinit var progressBar: ProgressBar
+  lateinit var gambarBeasiswa: ImageView
+  lateinit var deskripsiBeasiswa: TextView
+  lateinit var deadlineTextView: TextView
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    val beasiswa: ListBeasiswaResponse.Beasiswa = arguments?.get("beasiswa") as ListBeasiswaResponse.Beasiswa
+    val beasiswa: BeasiswaList = arguments?.get("beasiswa") as BeasiswaList
+
+    namaBeasiswa = view.findViewById(R.id.namaBeasiswa)
+    adView = view.findViewById(R.id.adView)
+    progressBar = view.findViewById(R.id.progressBar)
+    gambarBeasiswa = view.findViewById(R.id.gambarBeasiswa)
+    deskripsiBeasiswa = view.findViewById(R.id.deskripsiBeasiswa)
+    deadlineTextView = view.findViewById(R.id.deadlineTextView)
+
     namaBeasiswa.text = beasiswa.nama
     activity?.let { Glide.with(it).load(beasiswa.gambar).into(gambarBeasiswa) }
 

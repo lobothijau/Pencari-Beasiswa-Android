@@ -1,7 +1,6 @@
 package id.droidindonesia.pencaribeasiswa.adapter
 
 import android.app.Activity
-import android.support.v7.widget.RecyclerView
 import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
@@ -12,22 +11,20 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import id.droidindonesia.pencaribeasiswa.R
 import id.droidindonesia.pencaribeasiswa.model.Artikel
-import id.droidindonesia.pencaribeasiswa.service.ListBeasiswaResponse
-import kotlinx.android.synthetic.main.notification_template_lines_media.view.*
 import java.text.SimpleDateFormat
 
 
-class ArtikelListAdapter(private var listArtikel: List<Any>?,
+class ArtikelListAdapter(private var items: List<Any>?,
                          private val podcastListAdapterListener: ArtikelListAdapterListener,
                          private val parentActivity: Activity) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
 
 
   interface ArtikelListAdapterListener {
     fun onDetailArtikel(artikel: Artikel?)
   }
 
-  inner class ViewHolder(v: View, private val podcastListAdapterListener: ArtikelListAdapterListener) : RecyclerView.ViewHolder(v) {
+  inner class ViewHolder(v: View, private val podcastListAdapterListener: ArtikelListAdapterListener) : androidx.recyclerview.widget.RecyclerView.ViewHolder(v) {
 
     val judulTV: TextView = v.findViewById(R.id.titleTextView)
     val gambarIV: ImageView = v.findViewById(R.id.newsImageView)
@@ -36,18 +33,18 @@ class ArtikelListAdapter(private var listArtikel: List<Any>?,
 
     init {
       v.setOnClickListener {
-        podcastListAdapterListener.onDetailArtikel(listArtikel!![adapterPosition] as Artikel)
+        podcastListAdapterListener.onDetailArtikel(items!![adapterPosition] as Artikel)
       }
     }
   }
 
   fun setData(listArtikelFromServer: List<Any>) {
-    this.listArtikel = listArtikelFromServer
+    this.items = listArtikelFromServer
     this.notifyDataSetChanged()
   }
 
   override fun onCreateViewHolder(parent: ViewGroup,
-                                  viewType: Int): RecyclerView.ViewHolder {
+                                  viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
 
 
     val menuItemLayoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.artikel_item, parent, false)
@@ -55,8 +52,8 @@ class ArtikelListAdapter(private var listArtikel: List<Any>?,
 
   }
 
-  override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-    val searchView = listArtikel?.get(position) as Artikel
+  override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
+    val searchView = items?.get(position) as Artikel
 
     val format = SimpleDateFormat("yyyy-MM-dd")
     val date = format.parse(searchView.created_at)
@@ -75,7 +72,11 @@ class ArtikelListAdapter(private var listArtikel: List<Any>?,
   }
 
   override fun getItemCount(): Int {
-    return listArtikel?.size ?: 0
+    return items?.size ?: 0
   }
 
+  fun clear() {
+    items = emptyList()
+    notifyDataSetChanged()
+  }
 }

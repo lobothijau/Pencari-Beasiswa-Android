@@ -33,6 +33,8 @@ package id.droidindonesia.pencaribeasiswa.service
 import id.droidindonesia.pencaribeasiswa.BuildConfig
 import id.droidindonesia.pencaribeasiswa.model.Artikel
 import id.droidindonesia.pencaribeasiswa.model.Beasiswa
+import id.droidindonesia.pencaribeasiswa.model.BeasiswaList
+import id.droidindonesia.pencaribeasiswa.model.Lomba
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
@@ -44,7 +46,10 @@ import retrofit2.http.Query
 
 interface BeasiswaService {
   @GET("beasiswa/all/")
-  fun getAllBeasiswa(@Query("q") q: String): Call<List<ListBeasiswaResponse.Beasiswa>>
+  fun getAllBeasiswa(@Query("nama") nama: String): Call<List<BeasiswaList>>
+
+  @GET("beasiswa/all/")
+  fun getAllBeasiswaByJenis(@Query("nama") nama: String, @Query(value = "jenis") jenis: String): Call<List<BeasiswaList>>
 
   @GET("beasiswa/{id}/")
   fun getBeasiswa(@Path("id") id: Int): Call<Beasiswa>
@@ -54,6 +59,12 @@ interface BeasiswaService {
 
   @GET("artikel/{id}/")
   fun getArtikel(@Path("id") id: Int): Call<Artikel>
+
+  @GET("lomba/all/")
+  fun getAllLomba(@Query("q") q: String): Call<List<Lomba>>
+
+  @GET("lomba/{id}/")
+  fun getLomba(@Path("id") id: Int): Call<Lomba>
 
   companion object {
     val instance: BeasiswaService by lazy {
