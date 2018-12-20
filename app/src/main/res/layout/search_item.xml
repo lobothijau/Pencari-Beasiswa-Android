@@ -133,6 +133,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="@font/roboto_light"
+                        android:maxLines="2"
                         android:text="Deadline:"
                         android:textColor="@color/md_white_1000"
                         android:textSize="@dimen/font_body_size"

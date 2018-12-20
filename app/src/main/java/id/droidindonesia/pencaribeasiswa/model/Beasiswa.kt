@@ -11,7 +11,8 @@ data class BeasiswaList(
     val nama: String,
     val gambar: String,
     val start: String,
-    val deadline: String
+    val deadline: String,
+    val sumber: String
 ) : Parcelable
 
 data class Beasiswa(

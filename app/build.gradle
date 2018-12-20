@@ -15,8 +15,8 @@ android {
         applicationId "id.droidindonesia.pencaribeasiswa"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 6
-        versionName "2.0.1"
+        versionCode 11
+        versionName "2.3.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         multiDexEnabled true
@@ -33,7 +33,7 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.android.material:material:1.1.0-alpha01'
+    implementation 'com.google.android.material:material:1.1.0-alpha02'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha2'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
@@ -50,20 +50,23 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.google.firebase:firebase-core:16.0.4'
+    implementation 'com.google.firebase:firebase-core:16.0.6'
     implementation 'com.google.firebase:firebase-messaging:17.3.4'
-    implementation 'com.google.firebase:firebase-ads:17.0.0'
-    implementation 'com.google.android.gms:play-services-ads:17.0.0'
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.5'
+    implementation 'com.google.firebase:firebase-ads:17.1.2'
+    implementation 'com.google.android.gms:play-services-ads:17.1.2'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.7'
 
 
-    implementation 'androidx.room:room-runtime:2.1.0-alpha02'
+    implementation 'androidx.room:room-runtime:2.1.0-alpha03'
 //    annotationProcessor  "android.arch.persistence.room:compiler:$room_version"
-    kapt 'androidx.room:room-compiler:2.1.0-alpha02' // use kapt for Kotlin
+    kapt 'androidx.room:room-compiler:2.1.0-alpha03' // use kapt for Kotlin
 
     implementation 'com.github.chrisbanes:PhotoView:2.2.0'
 
     implementation 'com.android.support:multidex:1.0.3'
+
+    implementation 'com.thefinestartist:finestwebview:1.2.7'
+
 }
 
 kotlin {

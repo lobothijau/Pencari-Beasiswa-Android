@@ -59,16 +59,27 @@ import id.droidindonesia.pencaribeasiswa.model.BeasiswaList
 import id.droidindonesia.pencaribeasiswa.model.Lomba
 import android.content.DialogInterface
 import androidx.core.view.MenuItemCompat
-import java.io.File.separator
-import kotlin.text.StringBuilder
+import com.thefinestartist.finestwebview.FinestWebView
 
 
 class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAdapterListener, ArtikelListAdapter.ArtikelListAdapterListener, LombaListAdapter.LombaAdapterListener {
   override fun onShowLomba(lomba: Lomba?) {
-    val lombaDetailsFragment = LombaDetailsFragment.newInstance(lomba)
-    supportFragmentManager.beginTransaction().add(R.id.podcastDetailsContainer,
-        lombaDetailsFragment, TAG_LOMBA_FRAGMENT).addToBackStack(TAG_LOMBA_FRAGMENT).commit()
-    hideListAndBottomNavigation()
+    if (lomba != null || lomba?.sumber?.isNotEmpty()!!) {
+      FinestWebView.Builder(this)
+          .titleDefault("")
+          .progressBarColorRes(R.color.colorAccent)
+          .swipeRefreshColorRes(R.color.colorAccent)
+          .webViewSupportZoom(true)
+          .webViewDisplayZoomControls(true)
+          .webViewBuiltInZoomControls(true)
+          .show(lomba.sumber)
+    } else {
+      Toast.makeText(this, "Informasi lomba tidak tersedia", Toast.LENGTH_SHORT).show()
+    }
+    //    val lombaDetailsFragment = LombaDetailsFragment.newInstance(lomba)
+    //    supportFragmentManager.beginTransaction().add(R.id.podcastDetailsContainer,
+    //        lombaDetailsFragment, TAG_LOMBA_FRAGMENT).addToBackStack(TAG_LOMBA_FRAGMENT).commit()
+    //    hideListAndBottomNavigation()
   }
 
   fun hideListAndBottomNavigation() {
@@ -137,14 +148,15 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
     fab.setOnClickListener {
       val builder = AlertDialog.Builder(this@BeasiswaActivity)
 
-      val entries = arrayOf("Luar Negeri", "S1", "S2", "S3", "Dalam Negeri")
+      val entries = arrayOf("Luar Negeri", "D3", "S1", "S2", "S3", "Dalam Negeri")
       val entryValues = emptyArray<Int>()
 
-      val checkBoolean = booleanArrayOf(false, // Red
-          false, // Green
-          false, // Blue
-          false, // Purple
-          false // Olive
+      val checkBoolean = booleanArrayOf(false,
+          false,
+          false,
+          false,
+          false,
+          false
       )
       builder.setTitle("Filter berdasarkan: ")
           // Specify the list array, the items to be selected by default (null for none),
@@ -249,6 +261,16 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
         showToast(it)
         searchMenuItem.isVisible = false
       }
+    } else if (item?.itemId == R.id.contact_us) {
+      val email = Intent(Intent.ACTION_SEND)
+      email.putExtra(Intent.EXTRA_EMAIL, arrayOf<String>("coolest.studio@gmail.com"))
+      email.putExtra(Intent.EXTRA_SUBJECT, "Tulis judul pesan anda.")
+      email.putExtra(Intent.EXTRA_TEXT, "Tulis isi pesan anda.")
+
+      //need this to prompts email client only
+      email.type = "message/rfc822"
+
+      startActivity(Intent.createChooser(email, "Kirim dengan :"))
     }
 
     return super.onOptionsItemSelected(item)
@@ -286,26 +308,41 @@ class BeasiswaActivity : AppCompatActivity(), BeasiswaListAdapter.PodcastListAda
 
   override fun onShowDetails(beasiswa: BeasiswaList?) {
     if (beasiswa != null) {
-      showDetailsFragment(beasiswa)
+      FinestWebView.Builder(this)
+          .titleDefault("")
+          .progressBarColorRes(R.color.colorAccent)
+          .swipeRefreshColorRes(R.color.colorAccent)
+          .webViewSupportZoom(true)
+          .webViewDisplayZoomControls(true)
+          .webViewBuiltInZoomControls(true)
+          .show(beasiswa.sumber)
+
+
+      // showDetailsFragment(beasiswa)
+    } else {
+      Toast.makeText(this, "Data beasiswa tidak tersedia.", Toast.LENGTH_SHORT).show()
     }
   }
 
   private fun searchBeasiswaWithFilter(checkBoolean: BooleanArray) {
-    var stringBuilder = ArrayList<String>()
+    var listString = ArrayList<String>()
     if (checkBoolean[0])
-      stringBuilder.add("1")
+      listString.add("1")
     if (checkBoolean[1])
-      stringBuilder.add("2")
+      listString.add("6")
     if (checkBoolean[2])
-      stringBuilder.add("3")
+      listString.add("2")
     if (checkBoolean[3])
-      stringBuilder.add("4")
+      listString.add("3")
     if (checkBoolean[4])
-      stringBuilder.add("5")
+      listString.add("4")
+    if (checkBoolean[5])
+      listString.add("5")
 
-    Log.d("BeasiswaActivity", "Hasil" + stringBuilder.joinToString(separator = ","))
 
-    mainViewModel.searchPodcastsByJenis(nama, stringBuilder.joinToString(separator = ",")) { beasiswaResponse ->
+    Log.d("BeasiswaActivity", "Hasil" + listString.joinToString(separator = ","))
+
+    mainViewModel.searchPodcastsByJenis(nama, listString.joinToString(separator = ",")) { beasiswaResponse ->
 
       // tutup search view
       if (!searchView.isIconified) {
